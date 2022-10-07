@@ -2,18 +2,33 @@ var b;
 var f;
 var p;
 
+function randomIntBetween(min, max) { 
+    return Math.random() * (max - min + 1) + min
+}
+  
+
 function Ball() {
     this.ballX = 0;
     this.ballY = 0;
     this.velocityX = -1;
     this.velocityY = 1;
     this.width = 20;
+    this.velMin = -1.5;
+    this.velMax = 1.5;
     this.height = this.width;
     this.ballElem = document.getElementById("ball");
     this.initBall = () => {
         this.ballElem.style.width = `${this.width}px`;
         this.ballX = (f.width / 2);
         this.ballY = (f.height / 2);
+        this.velocityX = this.velocityX * randomIntBetween(this.velMin,this.velMax)
+        this.velocityY = this.velocityY * randomIntBetween(this.velMin,this.velMax)
+        while(this.velocityX == 0){
+            this.velocityX = this.velocityX * randomIntBetween(this.velMin,this.velMax)
+        }
+        while(this.velocityY == 0) {
+            this.velocityY = this.velocityY * randomIntBetween(this.velMin,this.velMax)
+        }
         this.updatePositions();
     }
     this.updatePositions = () => {
@@ -30,11 +45,50 @@ function Pedals() {
     this.height = 100;
     this.width = 10;
     this.scoreLeft = 0;
+    this.pedalSpeed = 1;
+    // this.AIImperfecion = 1;
+    this.moveInterval = [];
     this.scoreRight = 0;
     this.initPedals = () => {
         this.leftY = f.height / 2;
         this.rightY = f.height / 2;
         this.updatePositions();
+        document.addEventListener("keydown", this.keyDown)
+        document.addEventListener("keyup", this.keyUp)
+    }
+    this.stopInterval = (interval) => {
+        clearInterval(this.moveInterval[interval]);
+        this.moveInterval.splice(interval, 1)
+    }
+    this.keyDown = (e) => {
+        if(e.code == "ArrowUp"){
+            this.moveInterval.push(setInterval(() => {
+                console.log("set interval" + this.moveInterval);
+                if((this.leftY - (this.height / 2)) > 0) this.leftY -= this.pedalSpeed;
+                if(this.moveInterval.length > 1){
+                    this.stopInterval(0)
+                }
+            }, 1000 / 500));
+        } else if(e.code == "ArrowDown") {
+            this.moveInterval.push(setInterval(() => {
+                console.log("set interval" + this.moveInterval);
+                if((this.leftY + (this.height / 2)) < f.height) this.leftY += this.pedalSpeed;
+                if(this.moveInterval.length > 1){
+                    this.stopInterval(0)
+                }
+            }, 1000 / 500));
+        }
+    }
+    this.keyUp = (e) => {
+        console.log("Keyup" + this.moveInterval.length)
+        if(this.moveInterval.length > 0){
+            if(this.moveInterval.length > 1) return console.error("RIP")
+            clearInterval(this.moveInterval[0])
+            console.log("cleared Interval" + this.moveInterval)
+            this.moveInterval.splice(0, 1)
+        } else {
+            console.error("Requested KeyUp but key was never down")
+        }
     }
     this.updatePositions = () => {
         this.pedalLeftElem.style.top = `${this.leftY - (this.height / 2)}px`;
@@ -45,6 +99,7 @@ function Pedals() {
 function Field() {
     this.fieldElem = document.getElementById("field");
     this.scoreElem = document.getElementById("score");
+    this.fpsElem = document.getElementById("fps");
     this.width = this.fieldElem.offsetWidth;
     this.height = this.fieldElem.offsetHeight;
     this.initGame = () => {
@@ -52,6 +107,7 @@ function Field() {
         b.initBall();
         p = new Pedals();
         p.initPedals();
+        this.then = Date.now() / 1000;
         this.updateInterval = setInterval(this.update, 1000 / 500);
     }
     this.update = () => {
@@ -72,13 +128,32 @@ function Field() {
             && b.ballX >= this.width-25){
                 b.velocityX = b.velocityX * (-1);
         }
+
+
+        //right pedal AI
+        if(b.ballY < p.rightY && (p.rightY - (p.height / 2)) > 0){
+            p.rightY -= p.pedalSpeed /*+ p.AIImperfecion*/
+        }
+        if(b.ballY > p.rightY && (p.rightY + (p.height / 2)) < this.height) {
+            p.rightY += p.pedalSpeed /*+ p.AIImperfecion*/
+        }
+
         //lose
         if (b.ballX <= (b.width / 2) || b.ballX >= this.width - (b.width / 2)) {
-            alert("You lost!");
             b.initBall();
             p.initPedals();
         }
         b.updatePositions();
+        p.updatePositions();
+        
+        //fps
+        this.now = Date.now() / 1000;  
+
+        this.elapsedTime = this.now - this.then;
+        this.then = this.now;
+        
+        this.fps = 1 / this.elapsedTime;
+        this.fpsElem.innerText = this.fps.toFixed(2); 
     }
 }
 
