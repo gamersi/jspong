@@ -14,7 +14,7 @@ function Ball() {
     this.velocityY = 1;
     this.width = 20;
     this.velMin = -1.5;
-    this.velMax = 1.5;
+    this.velMax = 1.3;
     this.height = this.width;
     this.ballElem = document.getElementById("ball");
     this.initBall = () => {
@@ -23,10 +23,10 @@ function Ball() {
         this.ballY = (f.height / 2);
         this.velocityX = this.velocityX * randomIntBetween(this.velMin,this.velMax)
         this.velocityY = this.velocityY * randomIntBetween(this.velMin,this.velMax)
-        while(this.velocityX == 0){
+        while(this.velocityX >= -0.5 && this.velocityX <= 0.5){
             this.velocityX = this.velocityX * randomIntBetween(this.velMin,this.velMax)
         }
-        while(this.velocityY == 0) {
+        while(this.velocityY >= -0.5 && this.velocityY <= 0.5) {
             this.velocityY = this.velocityY * randomIntBetween(this.velMin,this.velMax)
         }
         this.updatePositions();
@@ -103,12 +103,21 @@ function Field() {
     this.width = this.fieldElem.offsetWidth;
     this.height = this.fieldElem.offsetHeight;
     this.initGame = () => {
+        this.isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if(this.isFirefox) return window.location.href = "/unsupported"
         b = new Ball();
         b.initBall();
         p = new Pedals();
         p.initPedals();
+        window.addEventListener("resize", this.resize)
         this.then = Date.now() / 1000;
         this.updateInterval = setInterval(this.update, 1000 / 500);
+    }
+    this.resize = (e) => {
+        // b.initBall();
+        // p.initPedals();
+        this.width = this.fieldElem.offsetWidth;
+        this.height = this.fieldElem.offsetHeight;
     }
     this.update = () => {
         b.ballX += b.velocityX;
@@ -134,12 +143,21 @@ function Field() {
         if(b.ballY < p.rightY && (p.rightY - (p.height / 2)) > 0){
             p.rightY -= p.pedalSpeed /*+ p.AIImperfecion*/
         }
+
         if(b.ballY > p.rightY && (p.rightY + (p.height / 2)) < this.height) {
             p.rightY += p.pedalSpeed /*+ p.AIImperfecion*/
         }
 
         //lose
         if (b.ballX <= (b.width / 2) || b.ballX >= this.width - (b.width / 2)) {
+            if(b.ballX <= (b.width / 2)){
+                p.scoreLeft += 1;
+                this.scoreElem.textContent = `${p.scoreLeft}|${p.scoreRight}`
+            }
+            if(b.ballX >= this.width - (b.width / 2)) {
+                p.scoreRight += 1;
+                this.scoreElem.textContent = `${p.scoreLeft}|${p.scoreRight}`
+            }
             b.initBall();
             p.initPedals();
         }
