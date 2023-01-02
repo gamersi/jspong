@@ -104,7 +104,7 @@ function Field() {
     this.height = this.fieldElem.offsetHeight;
     this.initGame = () => {
         this.isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if(this.isFirefox) return window.location.href = "/unsupported"
+        if(this.isFirefox) return alert("!!!: Firefox + Early ALPHA = Probably many bugs ")
         b = new Ball();
         b.initBall();
         p = new Pedals();
