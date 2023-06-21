@@ -13,7 +13,7 @@ body {
     /* line-height: 0.5; */
 }
 
-.field{
+.field {
     position: absolute;
     top: 0;
     background: #000;
@@ -31,7 +31,7 @@ body {
     left: 0;
 }
 
-.pedalLeft{
+.pedalLeft {
     position: absolute;
     top: 5px;
     left: 10px;
@@ -41,7 +41,7 @@ body {
     height: 100px;
 }
 
-.pedalRight{
+.pedalRight {
     position: absolute;
     top: 5px;
     right: 10px;
@@ -49,4 +49,16 @@ body {
     border-radius: 50px;
     width: 10px;
     height: 100px;
+}
+
+@media (max-width: 768px) {
+
+    /*touchscreen controls */
+    body {
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        touch-action: none;
+        -webkit-touch-callout: none;
+    }
 }
