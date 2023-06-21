@@ -78,7 +78,7 @@ function Field() {
     this.pressedKeys = [];
     this.opAI = false;
     this.lastTapTime = 0;
-    this.doubleTapSpeed = 300;
+    this.doubleTapThreshold = 300;
 
     this.initGame = () => {
         b = new Ball();
@@ -92,7 +92,6 @@ function Field() {
         this.animationFrameId = requestAnimationFrame(this.update);
         window.addEventListener("keydown", this.keyDown);
         window.addEventListener("keyup", this.keyUp);
-        // touchscreen support
         window.addEventListener("touchstart", this.touchStart);
         window.addEventListener("touchmove", this.touchMove);
         window.addEventListener("touchend", this.touchEnd);
@@ -112,6 +111,18 @@ function Field() {
         this.pressedKeys[e.code] = false;
     }
     this.touchStart = (e) => {
+        this.currentTime = new Date().getTime();
+        this.tapTimeDiff = this.currentTime - this.lastTapTime;
+        if (this.tapTimeDiff < this.doubleTapThreshold) {
+            if (this.isPaused) {
+                this.resumeGame();
+                this.isPaused = false;
+            } else {
+                this.pauseGame();
+                this.isPaused = true;
+            }
+        }
+        this.lastTapTime = this.currentTime;
         if (e.touches.length > 0) {
             if (e.touches[0].clientY <= this.height / 2) {
                 this.pressedKeys["ArrowUp"] = true;
@@ -157,7 +168,6 @@ function Field() {
         cancelAnimationFrame(this.animationFrameId);
     }
     this.resumeGame = () => {
-        console.log("resume");
         this.animationFrameId = requestAnimationFrame(this.update);
     }
     this.resetGame = () => {
@@ -171,17 +181,17 @@ function Field() {
         b.ballY += b.velocityY;
 
         // Collisions
-        //bounce
+        // bounce
         if (b.ballY >= this.height - (b.width / 2) || b.ballY <= (b.width / 2)) {
             b.velocityY = b.velocityY * (-1);
         }
-        //pedals
-        //left
+        // pedals
+        // left
         if (b.ballY >= p.leftY - (p.height / 2) && b.ballY <= p.leftY + (p.height / 2)
             && b.ballX <= 25) {
             b.velocityX = b.velocityX * (-1);
         }
-        //right
+        // right
         if (b.ballY >= p.rightY - (p.height / 2) && b.ballY <= p.rightY + (p.height / 2)
             && b.ballX >= this.width - 25) {
             b.velocityX = b.velocityX * (-1);
@@ -210,7 +220,7 @@ function Field() {
 
         }
 
-        //lose
+        // lose
         if (b.ballX <= (b.width / 2) || b.ballX >= this.width - (b.width / 2)) {
             if (b.ballX <= (b.width / 2)) {
                 p.scoreRight += 1;
